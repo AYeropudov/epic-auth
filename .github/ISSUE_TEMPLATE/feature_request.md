@@ -1,5 +1,5 @@
 ---
-name: Feature request
+name: Feature request ru
 about: Запрос на изменение, улучшение, добавление
 
 ---
