@@ -28,6 +28,13 @@ class User(PaginatedAPIMixin, db.Model):
             "username": self.user_name
         }
 
+    def to_dict_private(self):
+        return {
+            "id": self.id,
+            "username": self.user_name,
+            "email": self.email
+        }
+
     def from_dict(self, adict, new_user=False):
         for field in self.FIELDS:
             if field in adict:

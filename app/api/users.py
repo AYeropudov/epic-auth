@@ -29,9 +29,9 @@ def create_user():
     data = request.get_json() or {}
     if 'user_name' not in data or 'email' not in data or 'password' not in data:
         return bad_request('must include username, email and password fields')
-    if User.query.filter_by(user_name=data['user_name']).first():
+    if not check_user_duplicates(user_name=data['user_name']):
         return bad_request('please use a different username')
-    if User.query.filter_by(email=data['email']).first():
+    if not check_user_duplicates(email=data['email']):
         return bad_request('please use a different email address')
     user = User()
     user.from_dict(data, new_user=True)
@@ -43,7 +43,19 @@ def create_user():
     return response
 
 
-@bp.route('/users', methods=['PATCH'])
-def update_user():
-    pass
+@bp.route('/users/<int:user_id>', methods=['PATCH'])
+def update_user(user_id):
+    user_to_update = User.query.get_or_404(user_id)
+    data = request.get_json() or {}
+    if 'user_name' in data and user_to_update.user_name != data['user_name'] and not check_user_duplicates(user_name=data['user_name']):
+        return bad_request('username already in use')
+    if 'email' in data and user_to_update.email != data['email'] and not check_user_duplicates(email=data['email']):
+        return bad_request('email already in use')
+    user_to_update.from_dict(data, new_user=False)
+    db.session.commit()
+    return jsonify(user_to_update.to_dict_private())
+
+
+def check_user_duplicates(**kwargs):
+    return False if User.query.filter_by(**kwargs).first() else True
 
