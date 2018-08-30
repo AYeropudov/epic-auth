@@ -4,25 +4,5 @@ pip
 wheel
 flake8
 Sphinx
+httpie
 
-alembic
-asn1crypto
-cffi
-click
-cryptography
-Flask
-Flask-Migrate
-Flask-SQLAlchemy
-idna
-itsdangerous
-Jinja2
-Mako
-MarkupSafe
-pycparser
-PyJWT
-PyMySQL
-python-dateutil
-python-editor
-six
-SQLAlchemy
-Werkzeug
