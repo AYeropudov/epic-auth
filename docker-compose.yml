@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+
+  sqldb:
+    image: mariadb
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rEEKbU7fHK3C
+      MYSQL_DATABASE: epic
+      MYSQL_USER: epicrpg
+      MYSQL_PASSWORD: e36BbwM2x6Tm
+    ports:
+      - "3307:3306"
+    container_name: EpicDb
