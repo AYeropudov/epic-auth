@@ -20,6 +20,7 @@ class Token(db.Model):
         self.expired_at = (datetime.datetime.utcnow() + datetime.timedelta(days=10)).timestamp()
 
     def encode(self):
+        """ Возвращаем уже зашифрованную строку с токеном"""
         _dict = {
             "token": self.access,
             "exp": self.expired_at,
@@ -35,6 +36,7 @@ class Token(db.Model):
             raise exceptions.TokenExpired
 
     def regenerate(self):
+        """ обновляем токен и срок жизни, но не сохраняем"""
         self.access = str(uuid.uuid4())
         self.created_at = (datetime.datetime.utcnow()).timestamp()
         self.expired_at = (datetime.datetime.utcnow() + datetime.timedelta(days=10)).timestamp()
