@@ -1,7 +1,7 @@
 from flask import jsonify, request, url_for
 
 from app.api import bp
-from app.models import User
+from app.models import User, Token
 from .errors import bad_request, error_response
 from app import db
 
@@ -59,12 +59,26 @@ def update_user(user_id):
 def check_user_duplicates(**kwargs):
     return False if User.query.filter_by(**kwargs).first() else True
 
+
 @bp.route('/login', methods=['POST'])
 def login_user():
     data = request.get_json() or {}
     if 'user_name' not in data or 'password' not in data:
         return error_response(status_code=412, message='payload are not full')
-    find_user = User.query.filter_by(user_name=data.get('username', None)).first()
+    find_user = User.query.filter_by(user_name=data.get('user_name', None)).first()
     if find_user is None:
         return bad_request('User not found')
-    find_user.check_password(password=data.get('password', 'some-empty-password'))
+    if find_user.check_password(password=data.get('password', 'some-empty-password')):
+        _token = Token.query.filter_by(user_id=find_user.id).first()
+        if _token is None:
+            _token = Token()
+            _token.generate(user=find_user)
+            db.session.add(_token)
+        else:
+            _token.regenerate()
+
+        db.session.commit()
+        return jsonify({"jwt": _token.encode().decode('utf-8')})
+
+
+

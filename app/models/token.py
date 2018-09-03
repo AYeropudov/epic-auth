@@ -16,23 +16,25 @@ class Token(db.Model):
     def generate(self, user):
         self.user_id = user.id
         self.access = str(uuid.uuid4())
-        self.created_at = datetime.datetime.utcnow()
-        self.expired_at = datetime.datetime.utcnow() + datetime.timedelta(days=10)
+        self.created_at = (datetime.datetime.utcnow()).timestamp()
+        self.expired_at = (datetime.datetime.utcnow() + datetime.timedelta(days=10)).timestamp()
 
     def encode(self):
         _dict = {
             "token": self.access,
-            "exp": self.expired_at
+            "exp": self.expired_at,
+            "user_id": self.user_id
         }
-        return jwt.encode(payload=_dict, key=Config.JWT_KEY, algorithm='HS256')
+        return jwt.encode(payload=_dict, key=Config.JWT_KEY, algorithm='HS256',)
 
     @classmethod
     def decode_jwt(cls, jwt_str):
-        _decoded = jwt.decode(jwt=jwt_str, key=Config.JWT_KEY, algorithms=['HS256'])
-        if _decoded.get('exp', 0) < datetime.datetime.utcnow():
-            return _decoded
-        else:
+        try:
+            _decoded = jwt.decode(jwt=jwt_str, key=Config.JWT_KEY, algorithms=['HS256'])
+        except jwt.ExpiredSignatureError:
             raise exceptions.TokenExpired
 
-
-
+    def regenerate(self):
+        self.access = str(uuid.uuid4())
+        self.created_at = (datetime.datetime.utcnow()).timestamp()
+        self.expired_at = (datetime.datetime.utcnow() + datetime.timedelta(days=10)).timestamp()
