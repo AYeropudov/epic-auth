@@ -1,7 +1,7 @@
 from flask import jsonify, request, url_for
 
 from app.api import bp
-from app.models import User, Token
+from app.models import User, Token, Activation
 from .errors import bad_request, error_response
 from app import db
 
@@ -15,7 +15,7 @@ def get_user_by_id(id):
 def get_users_by_username(username):
     return jsonify(
         User.to_collection_dict(
-            query=User.query.filter(User.user_name.contains(username)),
+            query=User.query.filter(User.user_name.contains(username), User.is_active.__eq__(True)),
             page=1,
             per_page=10,
             endpoint='api.get_users_by_username',
@@ -37,7 +37,11 @@ def create_user():
     user.from_dict(data, new_user=True)
     db.session.add(user)
     db.session.commit()
-    response = jsonify(user.to_dict_open())
+    activation = Activation()
+    activation.generate_for_user(user)
+    db.session.add(activation)
+    db.session.commit()
+    response = jsonify(user.to_dict_private())
     response.status_code = 201
     response.headers['Location'] = url_for('api.get_user_by_id', id=user.id)
     return response
@@ -46,6 +50,8 @@ def create_user():
 @bp.route('/users/<int:user_id>', methods=['PATCH'])
 def update_user(user_id):
     user_to_update = User.query.get_or_404(user_id)
+    if not user_to_update.is_active:
+        return bad_request('user not found or not activate')
     data = request.get_json() or {}
     if 'user_name' in data and user_to_update.user_name != data['user_name'] and not check_user_duplicates(user_name=data['user_name']):
         return bad_request('username already in use')
@@ -68,6 +74,8 @@ def login_user():
     find_user = User.query.filter_by(user_name=data.get('user_name', None)).first()
     if find_user is None:
         return bad_request('User not found')
+    if not find_user.is_active:
+        return bad_request('user not found or not activate')
     if find_user.check_password(password=data.get('password', 'some-empty-password')):
         _token = Token.query.filter_by(user_id=find_user.id).first()
         if _token is None:
