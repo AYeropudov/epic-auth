@@ -12,6 +12,7 @@ class User(PaginatedAPIMixin, db.Model):
     user_name = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
     password_hash = db.Column(db.String(128))
+    is_active = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
         return "User {}".format(self.user_name)
@@ -32,7 +33,8 @@ class User(PaginatedAPIMixin, db.Model):
         return {
             "id": self.id,
             "username": self.user_name,
-            "email": self.email
+            "email": self.email,
+            "activated": self.is_active
         }
 
     def from_dict(self, adict, new_user=False):
@@ -40,6 +42,7 @@ class User(PaginatedAPIMixin, db.Model):
             if field in adict:
                 setattr(self, field, adict[field])
         if new_user:
+            self.is_active = False
             self.set_password(adict.get('password', self.generate_random_password()))
 
     @classmethod
