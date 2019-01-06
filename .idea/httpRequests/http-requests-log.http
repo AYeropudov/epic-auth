@@ -1,0 +1,40 @@
+POST http://auth.epic.lc/api/users
+Content-Type: application/json
+Cache-Control: no-cache
+
+{"user_name": "alex", "email": "alex@m.com", "password": "gfhjkm"}
+
+<> 2019-01-06T082052.201.json
+
+###
+
+POST http://auth.epic.lc/api/users
+Content-Type: application/json
+Cache-Control: no-cache
+
+{"user_name": "alex", "email": "alex@m.com", "password": "gfhjkm"}
+
+<> 2019-01-06T081119.500.html
+
+###
+
+POST http://auth.epic.lc/api/users
+Content-Type: application/json
+Cache-Control: no-cache
+
+{"user_name": "alex", "email": "alex@m.com", "password": "gfhjkm"}
+
+<> 2019-01-06T081022.500.html
+
+###
+
+POST http://auth.epic.lc/users
+Content-Type: application/json
+Cache-Control: no-cache
+
+{"user_name": "alex", "email": "alex@m.com", "password": "gfhjkm"}
+
+<> 2019-01-06T081000.404.html
+
+###
+

@@ -6,8 +6,15 @@
 # * 'mptr' and 'fptr' create a POST request to submit a form with a text or file field (multipart/form-data);
 
 
+POST http://auth.epic.lc/api/users
+Content-Type: application/json
+Cache-Control: no-cache
+
+{"user_name": "alex", "email": "alex@m.com", "password": "gfhjkm"}
+
+###
 ### Пробуем отредактировать юзера если он не активирован, результат - ошибка
-PATCH http://localhost:5000/api/users/1
+PATCH http://auth.epic.lc/api/users/1
 Accept: application/json
 Cache-Control: no-cache
 Content-Type: application/json
@@ -21,7 +28,7 @@ client.test("Patch not activate user is forbidden", function() {
 %}
 
 ### Пробуем логин юзера если он не активирован, результат - ошибка
-POST http://localhost:5000/api/login
+POST http://auth.epic.lc/api/login
 Content-Type: application/json
 
 {"user_name": "alex", "password": "pol123"}
