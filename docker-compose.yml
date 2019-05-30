@@ -6,11 +6,11 @@ services:
     image: traefik
     command: --api --docker
     ports:
-      - "82:80"     # The HTTP port
+      - "8090:80"     # The HTTP port
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
-      - web_nw
+      - auth_nw
   www:
     restart: always
     image: nginx
@@ -25,37 +25,25 @@ services:
     depends_on:
       - flaskapp
     networks:
-      - web_nw
+      - auth_nw
   flaskapp:
     build: .
     volumes:
       - .:/opt/services/flaskapp/src
-    ports:
-      - "5000:5000"
     expose:
       - 5000
-    depends_on:
-      - sqldb
     networks:
-      - db_nw
-      - web_nw
-  sqldb:
-    image: mariadb
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: rEEKbU7fHK3C
-      MYSQL_DATABASE: epic
-      MYSQL_USER: epicrpg
-      MYSQL_PASSWORD: e36BbwM2x6Tm
-    networks:
-      - db_nw
-    ports:
-      - "3309:3306"
-    volumes:
-      - ./conf/db/auth.sql:/docker-entrypoint-initdb.d/data.sql
-    container_name: EpicDb
+      - auth_nw
+      - epic-common_default
+      - internal-dev
 networks:
-  db_nw:
+  auth_nw:
     driver: bridge
-  web_nw:
+  epic-common_default:
+    external: true
+  internal-dev:
     driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.255.0/28
