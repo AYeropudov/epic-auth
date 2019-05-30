@@ -19,3 +19,5 @@ python-editor
 six
 SQLAlchemy
 Werkzeug
+python-dotenv
+pydevd-pycharm~=191.6183.50

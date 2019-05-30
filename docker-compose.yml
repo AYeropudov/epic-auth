@@ -35,8 +35,15 @@ services:
     networks:
       - auth_nw
       - epic-common_default
+      - internal-dev
 networks:
   auth_nw:
     driver: bridge
   epic-common_default:
     external: true
+  internal-dev:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.255.0/28
