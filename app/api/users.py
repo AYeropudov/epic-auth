@@ -1,9 +1,24 @@
-from flask import jsonify, request, url_for
+import functools
 
+from flask import jsonify, request, url_for
+import requests
 from app.api import bp
 from app.models import User, Token, Activation
 from .errors import bad_request, error_response
 from app import db
+
+
+def google_wrapper(*args, **kws):
+    print("some action")
+    token = request.headers.get('X-RECAPTCHA-TOKEN')
+    print(token)
+    response = requests.post(
+        'https://www.google.com/recaptcha/api/siteverify',
+        data={'secret': '6LdsQawUAAAAABSDsD_DTLegnyU5Iy9ISou3tN_w', 'response': token}
+    )
+    response = response.json()
+    print(response)
+    return response.get('success')
 
 
 @bp.route('/users/<int:id>', methods=['GET'])
@@ -26,25 +41,28 @@ def get_users_by_username(username):
 
 @bp.route('/users', methods=['POST'])
 def create_user():
-    data = request.get_json() or {}
-    if 'user_name' not in data or 'email' not in data or 'password' not in data:
-        return bad_request('must include username, email and password fields')
-    if not check_user_duplicates(user_name=data['user_name']):
-        return bad_request('please use a different username')
-    if not check_user_duplicates(email=data['email']):
-        return bad_request('please use a different email address')
-    user = User()
-    user.from_dict(data, new_user=True)
-    db.session.add(user)
-    db.session.commit()
-    activation = Activation()
-    activation.generate_for_user(user)
-    db.session.add(activation)
-    db.session.commit()
-    response = jsonify(user.to_dict_private())
-    response.status_code = 201
-    response.headers['Location'] = url_for('api.get_user_by_id', id=user.id)
-    return response
+    if google_wrapper(request=request):
+        data = request.get_json() or {}
+        if 'user_name' not in data or 'email' not in data or 'password' not in data:
+            return bad_request('must include username, email and password fields')
+        if not check_user_duplicates(user_name=data['user_name']):
+            return bad_request('please use a different username')
+        if not check_user_duplicates(email=data['email']):
+            return bad_request('please use a different email address')
+        user = User()
+        user.from_dict(data, new_user=True)
+        db.session.add(user)
+        db.session.commit()
+        activation = Activation()
+        activation.generate_for_user(user)
+        db.session.add(activation)
+        db.session.commit()
+        response = jsonify(user.to_dict_private())
+        response.status_code = 201
+        response.headers['Location'] = url_for('api.get_user_by_id', id=user.id)
+        return response
+    else:
+        return bad_request('SPAM detected. Protection rule')
 
 
 @bp.route('/users/<int:user_id>', methods=['PATCH'])
@@ -64,7 +82,6 @@ def update_user(user_id):
 
 def check_user_duplicates(**kwargs):
     return False if User.query.filter_by(**kwargs).first() else True
-
 
 @bp.route('/login', methods=['POST'])
 def login_user():
@@ -87,6 +104,3 @@ def login_user():
 
         db.session.commit()
         return jsonify({"jwt": _token.encode().decode('utf-8')})
-
-
-
