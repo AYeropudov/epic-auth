@@ -57,12 +57,34 @@ def create_user():
         activation.generate_for_user(user)
         db.session.add(activation)
         db.session.commit()
-        response = jsonify(user.to_dict_private())
+        body = user.to_dict_private()
+        _token = Token()
+        _token.generate(user=user)
+        db.session.add(_token)
+        db.session.commit()
+        body["jwt"] = _token.encode().decode('utf-8')
+        response = jsonify(body)
         response.status_code = 201
-        response.headers['Location'] = url_for('api.get_user_by_id', id=user.id)
         return response
     else:
         return bad_request('SPAM detected. Protection rule')
+
+
+@bp.route('/auth', methods=['GET'])
+def check():
+    response = jsonify({})
+    response.status_code = 200
+    return response
+
+
+@bp.route('/me', methods=['GET'])
+def me():
+    user = User.query.get_or_404(request.environ.get('user').get('user_id'))
+    response = jsonify(user.to_dict_private())
+    response.status_code = 200
+    return response
+
+
 
 
 @bp.route('/users/<int:user_id>', methods=['PATCH'])
@@ -71,7 +93,8 @@ def update_user(user_id):
     if not user_to_update.is_active:
         return bad_request('user not found or not activate')
     data = request.get_json() or {}
-    if 'user_name' in data and user_to_update.user_name != data['user_name'] and not check_user_duplicates(user_name=data['user_name']):
+    if 'user_name' in data and user_to_update.user_name != data['user_name'] and not check_user_duplicates(
+            user_name=data['user_name']):
         return bad_request('username already in use')
     if 'email' in data and user_to_update.email != data['email'] and not check_user_duplicates(email=data['email']):
         return bad_request('email already in use')
@@ -83,17 +106,17 @@ def update_user(user_id):
 def check_user_duplicates(**kwargs):
     return False if User.query.filter_by(**kwargs).first() else True
 
+
 @bp.route('/login', methods=['POST'])
 def login_user():
     data = request.get_json() or {}
-    if 'user_name' not in data or 'password' not in data:
+    if 'email' not in data or 'password' not in data:
         return error_response(status_code=412, message='payload are not full')
-    find_user = User.query.filter_by(user_name=data.get('user_name', None)).first()
+    find_user = User.query.filter_by(email=data.get('email', None)).first()
     if find_user is None:
         return bad_request('User not found')
-    if not find_user.is_active:
-        return bad_request('user not found or not activate')
-    if find_user.check_password(password=data.get('password', 'some-empty-password')):
+    check = find_user.check_password(password=data.get('password'))
+    if check:
         _token = Token.query.filter_by(user_id=find_user.id).first()
         if _token is None:
             _token = Token()

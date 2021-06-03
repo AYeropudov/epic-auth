@@ -4,6 +4,25 @@ Cache-Control: no-cache
 
 {"user_name": "alex", "email": "alex@m.com", "password": "gfhjkm"}
 
+<> 2020-04-02T082537.502.html
+
+###
+
+POST http://auth.epic.lc/api/login
+Content-Type: application/json
+
+{"user_name": "alex", "password": "pol123"}
+
+<> 2020-04-02T081627.502.html
+
+###
+
+POST http://auth.epic.lc/api/users
+Content-Type: application/json
+Cache-Control: no-cache
+
+{"user_name": "alex", "email": "alex@m.com", "password": "gfhjkm"}
+
 <> 2019-05-30T125530.500.html
 
 ###

@@ -13,7 +13,7 @@ class User(PaginatedAPIMixin, db.Model):
     email = db.Column(db.String(120), index=True, unique=True)
     password_hash = db.Column(db.String(128))
     is_active = db.Column(db.Boolean, default=False)
-
+    __tablename__ = 'auth_user'
     def __repr__(self):
         return "User {}".format(self.user_name)
 

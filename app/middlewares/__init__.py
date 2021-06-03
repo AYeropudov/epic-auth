@@ -1,0 +1,1 @@
+from .jwtauth import middlewareAuth

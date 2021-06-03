@@ -1,3 +1,5 @@
+from os import environ
+
 from flask import jsonify, request, url_for
 
 from app.api import bp
@@ -6,12 +8,13 @@ from .errors import bad_request, error_response
 from app import db
 
 
-@bp.route('/activate/<string:hash_code>', methods=['Post'])
-def activate(hash_code):
+@bp.route('/activate', methods=['Post'])
+def activate():
     data = request.get_json() or {}
     if data.get('code', None) is None:
         return bad_request('must include code field')
-    activation = Activation.query.get_or_404(hash_code)
+    user = User.query.get_or_404(request.environ.get("user").get('user_id', None))
+    activation = Activation.query.filter_by(user_id=user.id, is_used=False).first()
     if activation.is_used:
         return bad_request('must use new code')
     if activation.check_code(data.get('code')):

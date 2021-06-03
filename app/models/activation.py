@@ -5,15 +5,14 @@ from app import db
 from werkzeug.security import generate_password_hash
 from werkzeug.security import check_password_hash
 import uuid
-from app.services.activation import ActivationSrvLocal
-
+from app.services import activation
 
 class Activation(db.Model):
     id = db.Column(db.String(40), primary_key=True)
-    user_id = db.Column(db.Integer(), db.ForeignKey('user.id'))
+    user_id = db.Column(db.Integer(), db.ForeignKey('auth_user.id'))
     code = db.Column(db.String(128))
     is_used = db.Column(db.Boolean, default=False)
-
+    __tablename__ = 'auth_activation'
     def __init__(self):
         self.is_used = False
         self.id = str(uuid.uuid4())
@@ -35,5 +34,5 @@ class Activation(db.Model):
         self.user_id = user.id
         _code = self.generate_random_code()
         self.set_code(_code)
-        ActivationSrvLocal.send(code=_code, user=user)
+        activation.get_service().send(code=_code, user=user)
 

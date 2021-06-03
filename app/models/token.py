@@ -8,11 +8,11 @@ from app import exceptions
 
 class Token(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('auth_user.id'))
     access = db.Column(db.String(40))
     expired_at = db.Column(db.Integer)
     created_at = db.Column(db.Integer)
-
+    __tablename__ = 'auth_token'
     def generate(self, user):
         self.user_id = user.id
         self.access = str(uuid.uuid4())
