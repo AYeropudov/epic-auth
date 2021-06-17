@@ -16,6 +16,7 @@ services:
     - 127.0.0.1:84:80
     networks:
       - default
+      - epic-chat_default
   flaskapp:
     build: .
     volumes:
@@ -29,4 +30,6 @@ networks:
   default:
     driver: bridge
   epic-common_default:
+    external: true
+  epic-chat_default:
     external: true

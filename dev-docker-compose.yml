@@ -16,6 +16,7 @@ services:
     - 80:80
     networks:
       - default
+      - epic-chat_default
   flaskapp:
     build: .
     restart: "no"
@@ -26,8 +27,22 @@ services:
     networks:
       - default
       - epic-common_default
+  chatapp:
+    build: ./chat/
+    restart: "no"
+    volumes:
+      - ./chat/:/opt/services/chat
+    expose:
+      - 5678
+    ports:
+    - 127.0.0.1:5678:5678
+    networks:
+      - default
+      - epic-common_default
 networks:
   default:
     driver: bridge
   epic-common_default:
+    external: true
+  epic-chat_default:
     external: true

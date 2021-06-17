@@ -1,0 +1,8 @@
+asyncio==3.4.3
+websockets==9.1
+pydevd-pycharm==212.3724.23
+python-socketio
+aiohttp
+requests
+redis
+clickhouse-driver
